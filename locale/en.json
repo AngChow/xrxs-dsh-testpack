@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Xrxs testpack",
+    "description": "Build test packages for iOS (fastlane gym Debug), Android (gradlew assembleDebug), and HarmonyOS (devecocli), then upload to the fixed Pgyer inner-test channels ios_inner_test / android_inner_test / harmony_inner_test. API key and HarmonyOS P12 password live in the DSH credential store; output is redacted. HarmonyOS distribution requires a release certificate plus an internaltesting (designated-device) profile."
+  }
+}

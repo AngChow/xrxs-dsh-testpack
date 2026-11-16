@@ -1,0 +1,20 @@
+- insert:
+    - id: xrxs-testpack
+      name: xrxs-dsh-testpack
+      config:
+        pgyerApiKeyRef: PGYER_API_KEY
+        ios:
+          projectRoot: /Users/ang/workspace_codex/mobile-ios
+          scheme: XinRen
+          configuration: Debug
+          exportMethod: development
+        android:
+          projectRoot: /Users/ang/workspace_codex/mobile-android
+          gradleArgs: clean assembleDebug
+        harmony:
+          projectRoot: /Users/ang/workspace_codex/mobile_harmony
+          product: innerTest
+          buildMode: debug
+          p12Path: /Users/ang/develop/keystore/harmony/xrxs.p12
+          p12PasswordRef: PGYER_HARMONY_P12_PASSWORD
+      disabled: false

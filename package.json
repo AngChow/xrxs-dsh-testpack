@@ -1,0 +1,63 @@
+{
+  "name": "xrxs-dsh-testpack",
+  "version": "0.1.0",
+  "private": true,
+  "description": "DeepSeek Harness 插件：iOS / Android / 鸿蒙三端测试包打包并上传蒲公英固定内测渠道，凭据存 DSH 凭据库全程脱敏，带设置页与前置体检",
+  "license": "MIT",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "lib",
+    "cordis.patch.yml",
+    "README.md",
+    "icon.svg",
+    "locale/*.json"
+  ],
+  "engines": {
+    "node": ">=22.0.0",
+    "dsh": ">=0.2.0-rc.1 <0.3.0-0"
+  },
+  "dsh": {
+    "bundle": {
+      "platforms": [
+        "darwin"
+      ],
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "slots"
+      ]
+    }
+  },
+  "dependencies": {
+    "@deepseek-ai/schemastery": "^3.19.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AngChow/xrxs-dsh-testpack.git"
+  },
+  "bugs": {
+    "url": "https://github.com/AngChow/xrxs-dsh-testpack/issues"
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "pgyer",
+    "testpack",
+    "ios",
+    "android",
+    "harmonyos"
+  ]
+}
