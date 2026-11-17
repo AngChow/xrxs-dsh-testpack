@@ -1,6 +1,6 @@
 {
   "name": "xrxs-dsh-testpack",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "DeepSeek Harness 插件：iOS / Android / 鸿蒙三端测试包打包并上传蒲公英固定内测渠道，凭据存 DSH 凭据库全程脱敏，带设置页与前置体检",
   "license": "MIT",

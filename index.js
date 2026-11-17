@@ -72,7 +72,7 @@ export function apply(ctx, config) {
 
   async function resolveApiKey() {
     const info = await ctx.credentials.describe(config.pgyerApiKeyRef)
-    if (!info.configured) toolError(`凭据库缺少 ${config.pgyerApiKeyRef}（蒲公英 API key），请在 DSH 设置→凭据库中配置`)
+    if (!info.configured) toolError(`凭据库缺少 ${config.pgyerApiKeyRef}（蒲公英 API key），请在 插件 → 三端测试包 → 配置 页录入（值只进 DSH 凭据库）`)
     const hit = await ctx.credentials.resolve(config.pgyerApiKeyRef)
     if (!hit?.value) toolError(`凭据 ${config.pgyerApiKeyRef} 解析为空`)
     return hit.value
@@ -312,12 +312,12 @@ export function apply(ctx, config) {
     text: [
       '打 iOS/Android/鸿蒙测试包并上传蒲公英用 testpack_* 工具：先 testpack_doctor 体检，issues 为空再 testpack_run，结果用 testpack_status 收。',
       '渠道固定不可选：ios_inner_test / android_inner_test / harmony_inner_test。',
-      '蒲公英 API key 与鸿蒙 P12 密码存 DSH 凭据库，绝不要让用户在对话中粘贴；用户可在设置→插件→「三端测试包」tab 里改项目路径与录入凭据。',
+      '蒲公英 API key 与鸿蒙 P12 密码存 DSH 凭据库，绝不要让用户在对话中粘贴；用户可在 插件 → 三端测试包 → 配置 页改项目路径与录入凭据。',
       '鸿蒙包上蒲公英必须发布证书 + 指定设备发布(internaltesting) Profile；doctor 会校验，调试 Profile 或 app_gallery Profile 都不能用。',
     ].join(' '),
   })
 
-  // ---- 设置页 RPC（client.js 的「三端测试包」tab 调用）----
+  // ---- 配置页 RPC（client.js 的插件行配置页调用）----
   const RPC_CHANNEL = '/api/xrxs-testpack'
   const rpcFail = (message, code = 'error', status = 400) => Response.json({ ok: false, error: { code, message } }, { status })
 

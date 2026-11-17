@@ -16,7 +16,7 @@ DeepSeek Harness（DSH）插件：**三端测试包一条龙** —— iOS / Andr
   - `testpack_doctor`：免费体检（不打包不上传）——项目路径、构建工具链、凭据配置状态、鸿蒙签名材料与 Profile 类型校验
   - `testpack_run`：后台任务打包 + 上传，同平台不并发；体检有 issues 直接拒绝启动
   - `testpack_status`：非消费式读取任务进度 / 结果 / 分发链接
-- **设置页**（设置 → 插件 → 「三端测试包」tab）
+- **配置页**（插件 → 三端测试包 → 配置）
   - 三平台项目路径、Scheme / Gradle 参数 / 鸿蒙 Product 等表单，保存即热生效
   - 蒲公英 API key、鸿蒙 P12 密码录入（password 输入框，只进 DSH 凭据库，永不回显）
   - 一键体检，每平台「就绪 / 有问题」徽章 + 具体问题清单
@@ -36,7 +36,7 @@ cd xrxs-dsh-testpack && npm install   # 仅 schemastery 一个运行时依赖
 
 ## 配置
 
-安装后在 **设置 → 插件 → 三端测试包** 里改；默认值见 `cordis.patch.yml`：
+安装后在 **插件 → 三端测试包 → 配置** 里改；默认值见 `cordis.patch.yml`：
 
 ```yaml
 config:
@@ -59,7 +59,7 @@ config:
 
 渠道短链写死在代码里（`lib/pgyer.js` 的 `PLATFORM_CHANNEL`），换团队使用时改这里。
 
-### 凭据（DSH 设置 → 凭据库，或插件设置页录入）
+### 凭据（插件 → 三端测试包 → 配置 页录入，值只进 DSH 凭据库）
 
 | Key | 内容 |
 |---|---|

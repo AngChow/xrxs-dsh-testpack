@@ -1,5 +1,5 @@
 /**
- * xrxs-dsh-testpack Client 半：在「设置 → 插件」注册「三端测试包」设置 tab。
+ * xrxs-dsh-testpack Client 半：在「插件」管理页本插件行注册「三端测试包」配置页（plugins.row.config）。
  * 三平台项目路径/构建参数表单 + 蒲公英 API key / 鸿蒙 P12 密码录入（只进凭据库，不回显）
  * + 一键体检（含鸿蒙 Profile 类型校验）。通过 /api/xrxs-testpack RPC 读写 host。
  */
@@ -231,10 +231,18 @@ window.__ModuleLoader__.load({
     return {
       inject: ['slots'],
       apply(ctx) {
-        ctx.slots.inject('settings.plugins.tab', () =>
+        // 配置页挂在「插件」管理页本插件行的配置入口（key = 包名#行id），
+        // 不再占用 设置→内置插件 的横向 tab；summary 视图不渲染（行描述已有）。
+        // 配置表单直接内嵌在 bundle 详情页（官方 plugins.bundle.config 机制，
+        // 与 CUA/语音输入插件同款）：打开「插件 → 本插件」即可见，无需跳转。
+        ctx.slots.inject('plugins.bundle.config', () => ctx.slots.register(
+          { name: 'plugins.bundle.config', key: 'xrxs-dsh-testpack' },
+          (props) => props?.view === 'page' ? h(SettingsPage) : null,
+        ))
+        ctx.slots.inject('plugins.row.config', () =>
           ctx.slots.register(
-            { name: 'settings.plugins.tab', id: 'xrxs-testpack', order: 64, label: () => '三端测试包' },
-            SettingsPage,
+            { name: 'plugins.row.config', key: 'xrxs-dsh-testpack#xrxs-testpack' },
+            (props) => (props && props.view === 'page') ? h(SettingsPage) : null,
           ),
         )
       },
