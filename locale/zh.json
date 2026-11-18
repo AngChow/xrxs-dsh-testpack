@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "薪人薪事测试包",
+    "title": "三端测试包（蒲公英）",
     "description": "三端测试包一条龙：iOS（fastlane gym Debug）、Android（gradlew assembleDebug）、鸿蒙（devecocli）打包后自动上传蒲公英固定内测渠道 ios_inner_test / android_inner_test / harmony_inner_test。蒲公英 API key 与鸿蒙 P12 密码存 DSH 凭据库，日志全程脱敏。鸿蒙分发要求发布证书 + 指定设备发布 Profile，doctor 会前置校验。"
   }
 }

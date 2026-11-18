@@ -6,6 +6,10 @@
   "license": "MIT",
   "type": "module",
   "main": "index.js",
+  "scripts": {
+    "check": "node scripts/check.mjs",
+    "prepack": "npm run check"
+  },
   "exports": {
     ".": "./index.js",
     "./client": "./client.js",

@@ -1,4 +1,6 @@
-# xrxs-dsh-testpack
+# 三端测试包（蒲公英）
+
+> DSH 插件包名：`xrxs-dsh-testpack`
 
 DeepSeek Harness（DSH）插件：**三端测试包一条龙** —— iOS / Android / 鸿蒙（HarmonyOS）打测试包并自动上传[蒲公英](https://www.pgyer.com)固定内测渠道。
 
@@ -89,6 +91,16 @@ config:
 - Android 若工程开了 abi splits，产物是单架构 split（arm64-v8a），x86 模拟器装不上
 - 鸿蒙新增测试机需到 AGC 注册 UDID 并**重新生成 Profile**（设备名单签死在 p7b 里）
 - 后台任务随 DSH 进程存续，重启后任务不恢复
+
+## 打包与发布
+
+纯 JS 源码包，没有编译步骤；`prepack`（`scripts/check.mjs`）在打包前做语法与文件完整性校验——逐个 `node --check` 运行时 JS、解析随包 JSON、确认 `files` 白名单条目都在，避免语法错误或缺文件被打进 tgz。
+
+```bash
+npm pack    # 产出 xrxs-dsh-testpack-<version>.tgz
+```
+
+提交到插件市场时，把本目录（含 `package.json` 与刚生成的 `.tgz`）一起交给市场页面上传即可；`.tgz` 属构建产物，不进 git。
 
 ## License
 
