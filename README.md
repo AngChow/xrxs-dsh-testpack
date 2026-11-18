@@ -8,7 +8,7 @@ DeepSeek Harness（DSH）插件：**三端测试包一条龙** —— iOS / Andr
 |---|---|---|
 | iOS | `bundle exec fastlane gym`（Debug + development 导出） | `pgyer.com/ios_inner_test` |
 | Android | `./gradlew clean assembleDebug` | `pgyer.com/android_inner_test` |
-| 鸿蒙 | `devecocli build`（innerTest 签名）→ 上传 signed.hap → 自动上传同源 P12 证书 | `pgyer.com/harmony_inner_test` |
+| 鸿蒙 | `devecocli build`（innerTest 签名）→ 上传 signed.hap → 按需上传同源 P12 证书 | `pgyer.com/harmony_inner_test` |
 
 ## 功能
 
@@ -20,7 +20,7 @@ DeepSeek Harness（DSH）插件：**三端测试包一条龙** —— iOS / Andr
   - 三平台项目路径、Scheme / Gradle 参数 / 鸿蒙 Product 等表单，保存即热生效
   - 蒲公英 API key、鸿蒙 P12 密码录入（password 输入框，只进 DSH 凭据库，永不回显）
   - 一键体检，每平台「就绪 / 有问题」徽章 + 具体问题清单
-- **上传器**：蒲公英官方「快速上传」三步流程（getCOSToken → COS multipart → 轮询 buildInfo），业务码失败明确报错；鸿蒙包发布后自动调 `uploadHarmonyCert` 上传 P12（蒲公英用它签 manifest.json5，华为安装校验必需）
+- **上传器**：蒲公英官方「快速上传」三步流程（getCOSToken → COS multipart → 轮询 buildInfo），业务码失败明确报错；鸿蒙包发布后先查「证书列表」，**已有同一张 P12 就跳过上传**，没有才调 `uploadHarmonyCert`（蒲公英用它签 manifest.json5，华为安装校验必需）。证书上传失败但账户已有证书时降级为警告，不再把整次发布判失败
 - **安全**：凭据只存 DSH 凭据库（`credentialRef`），配置与日志零明文；任务输出统一脱敏
 
 ## 安装
@@ -55,7 +55,10 @@ config:
     buildMode: debug
     p12Path: /path/to/xrxs.p12         # 留空用 product 签名配置的 storeFile
     p12PasswordRef: PGYER_HARMONY_P12_PASSWORD
+    forceCertUpload: false             # true 表示每次发布都强制重传 P12（换证书后用）
 ```
+
+> 蒲公英的 P12 证书按**账户/应用**保存，不是按版本：同一张证书传一次就够，之后上传 hap 时不会再要求上传。插件默认会先查证书列表，命中同 CN 证书即跳过；换证书后把 `forceCertUpload` 置 `true` 传一次，再改回 `false`。
 
 渠道短链写死在代码里（`lib/pgyer.js` 的 `PLATFORM_CHANNEL`），换团队使用时改这里。
 

@@ -14,8 +14,8 @@ import path from 'node:path'
 import fs from 'node:fs'
 import os from 'node:os'
 import z from '@deepseek-ai/schemastery'
-import { uploadAndPublish, uploadHarmonyCert, PLATFORM_CHANNEL } from './lib/pgyer.js'
-import { buildIos, buildAndroid, buildHarmony, harmonySigningMaterial, readP7bInfo } from './lib/builders.js'
+import { uploadAndPublish, uploadHarmonyCert, listCertificates, PLATFORM_CHANNEL } from './lib/pgyer.js'
+import { buildIos, buildAndroid, buildHarmony, harmonySigningMaterial, readP7bInfo, readP12Subject, certSubjectCn } from './lib/builders.js'
 
 export const name = 'xrxs-testpack'
 export const inject = ['tools', 'jobs', 'subprocess', 'credentials', 'systemPrompt']
@@ -41,6 +41,8 @@ export const Config = z.object({
     buildMode: z.string().default('debug'),
     p12Path: z.string().default(''),
     p12PasswordRef: z.string().default('PGYER_HARMONY_P12_PASSWORD'),
+    forceCertUpload: z.boolean().default(false)
+      .description('默认 false：账户里已有同 CN 的证书就跳过上传（证书按账号保存，同一张只需传一次）。换证书后置 true 强制重传。'),
     devecoCli: z.string().default('devecocli'),
   }).default({}),
 })
@@ -241,12 +243,52 @@ export function apply(ctx, config) {
 
               let certWarning = null
               if (platform === 'harmony') {
-                job.updateProgress('上传 P12 证书')
+                // 蒲公英的 P12 证书按账户保存、按版本匹配：同一张证书只需上传一次。
+                // 已有同 CN 证书时重复上传没有意义（还可能被接口以 3016 拒绝），所以先查再决定。
+                const spawnFn = ctx.subprocess.spawn.bind(ctx.subprocess)
                 const sm = harmonySigningMaterial(cfg.projectRoot, cfg.product)
-                const cert = await uploadHarmonyCert({ apiKey, buildKey: pub.buildKey, p12Path: cfg.p12Path || sm.material.storeFile, p12Password, log })
-                certWarning = cert.warning
-                if (certWarning) log(`⚠️ 证书警告：${certWarning}`)
-                else log('P12 证书上传成功')
+                const p12Path = cfg.p12Path || (sm.ok ? sm.material.storeFile : '')
+                let existing = []
+                try {
+                  const r = await listCertificates({ apiKey })
+                  existing = r.list
+                  if (existing.length > 0) {
+                    log(`账户已有 ${existing.length} 张证书：${existing.map(c => `${c.certificateName}（${c.certificateCreated}）`).join('、')}`)
+                  }
+                } catch (e) {
+                  log(`⚠️ 证书列表查询失败，按原流程上传：${String(e?.message ?? e)}`)
+                }
+                const local = await readP12Subject(spawnFn, { p12Path, password: p12Password })
+                const sameCert = local.ok && existing.find(c => certSubjectCn(c.certificateName) === local.cn)
+                // 本地证书与账户里已有的都对不上（例如刚换了证书）：这次上传必须成功，失败仍要判失败
+                const rotation = local.ok && existing.length > 0 && !sameCert
+                const canSkip = !config.harmony.forceCertUpload &&
+                  (!!sameCert || (existing.length > 0 && !local.ok))
+                if (canSkip) {
+                  if (sameCert) {
+                    log(`证书已存在（CN=${local.cn}，${sameCert.certificateCreated}），跳过上传`)
+                  } else {
+                    certWarning = `本地证书解析失败（${local.issue}），已按账户已有证书跳过上传；如刚更换证书请把 harmony.forceCertUpload 设为 true`
+                    log(`⚠️ 证书警告：${certWarning}`)
+                  }
+                } else {
+                  job.updateProgress('上传 P12 证书')
+                  try {
+                    const cert = await uploadHarmonyCert({ apiKey, buildKey: pub.buildKey, p12Path, p12Password, log })
+                    certWarning = cert.warning
+                    if (certWarning) log(`⚠️ 证书警告：${certWarning}`)
+                    else log('P12 证书上传成功')
+                  } catch (e) {
+                    const msg = String(e?.message ?? e)
+                    // 账户里已有同类证书、且不是在换证书时，上传失败不该把整次发布判失败：蒲公英仍用已有证书签 manifest
+                    if (existing.length > 0 && !rotation) {
+                      certWarning = `证书上传失败，但账户已有证书，通常不影响安装：${msg}`
+                      log(`⚠️ 证书警告：${certWarning}`)
+                    } else {
+                      throw e
+                    }
+                  }
+                }
               }
 
               const result = { ok: true, platform, artifact, ...pub, certWarning, channelUrl: pub.url }
@@ -314,6 +356,7 @@ export function apply(ctx, config) {
       '渠道固定不可选：ios_inner_test / android_inner_test / harmony_inner_test。',
       '蒲公英 API key 与鸿蒙 P12 密码存 DSH 凭据库，绝不要让用户在对话中粘贴；用户可在 插件 → 三端测试包 → 配置 页改项目路径与录入凭据。',
       '鸿蒙包上蒲公英必须发布证书 + 指定设备发布(internaltesting) Profile；doctor 会校验，调试 Profile 或 app_gallery Profile 都不能用。',
+      '鸿蒙 P12 证书按蒲公英账号保存、同一张只需传一次：插件发布后会先查证书列表，已有同 CN 证书就跳过上传（换证书时把 harmony.forceCertUpload 设 true 强制重传）。',
     ].join(' '),
   })
 
